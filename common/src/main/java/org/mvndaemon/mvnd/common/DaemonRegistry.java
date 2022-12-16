@@ -325,26 +325,25 @@ public class DaemonRegistry implements AutoCloseable {
     private static final int PROCESS_ID = getProcessId0();
 
     private static int getProcessId0() {
-        Os current = Os.current();
-        if (current == Os.LINUX || Os.BSD) {
-            String self = current == Os.LINUX ? "self" : "curproc";
+        Os os = Os.current();
+        if (Os.LINUX == os || Os.BSD == os) {
+            final Path self = Paths.get("/proc", Os.LINUX == os ? "self" : "curproc");
             try {
-                final Path self = Paths.get("/proc", self);
                 if (Files.exists(self)) {
                     String pid = self.toRealPath().getFileName().toString();
                     if (pid.equals(self)) {
-                        LOGGER.debug("/proc/{} symlink could not be followed", self);
+                        LOGGER.debug("{} symlink could not be followed", self);
                     } else {
-                        LOGGER.debug("loading own PID from /proc/{} link: {}", self, pid);
+                        LOGGER.debug("loading own PID from {} link: {}", self, pid);
                         try {
                             return Integer.parseInt(pid);
                         } catch (NumberFormatException x) {
-                            LOGGER.warn("Unable to determine PID from malformed /proc/{} link `{}`", self, pid);
+                            LOGGER.warn("Unable to determine PID from malformed {} link `{}`", self, pid);
                         }
                     }
                 }
             } catch (IOException ignored) {
-                LOGGER.debug("could not load /proc/{}", self, ignored);
+                LOGGER.debug("could not load {}", self, ignored);
             }
         }
         String vmname = ManagementFactory.getRuntimeMXBean().getName();
