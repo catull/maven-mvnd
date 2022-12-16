@@ -18,13 +18,15 @@
  */
 package org.mvndaemon.mvnd.it;
 
+import javax.inject.Inject;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
+
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.assertj.MatchInOrderAmongOthers;
@@ -90,7 +92,9 @@ public class SingleModuleNativeIT {
     }
 
     String mojoStartedLogMessage(Properties props, String pluginArtifactId, String mojo, String executionId) {
-        return "\\Q--- " + pluginArtifactId + ":" + props.getProperty(pluginArtifactId + ".version") + ":" + mojo + " ("
+        return "\\Q--- "
+                + pluginArtifactId.replace("maven-", "").replace("-plugin", "")
+                + ":" + props.getProperty(pluginArtifactId + ".version") + ":" + mojo + " ("
                 + executionId + ") @ single-module ---\\E";
     }
 }

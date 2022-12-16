@@ -18,13 +18,12 @@
  */
 package org.mvndaemon.mvnd.client;
 
-import static java.lang.Thread.sleep;
-import static org.mvndaemon.mvnd.common.DaemonState.Canceled;
-
 import java.io.File;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -43,6 +42,7 @@ import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+
 import org.mvndaemon.mvnd.common.DaemonCompatibilitySpec;
 import org.mvndaemon.mvnd.common.DaemonCompatibilitySpec.Result;
 import org.mvndaemon.mvnd.common.DaemonConnection;
@@ -59,6 +59,9 @@ import org.mvndaemon.mvnd.common.SocketFamily;
 import org.mvndaemon.mvnd.common.logging.ClientOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.lang.Thread.sleep;
+import static org.mvndaemon.mvnd.common.DaemonState.Canceled;
 
 /**
  * File origin:
@@ -122,7 +125,7 @@ public class DaemonConnector {
         final String daemonId = newId();
         String message = handleStopEvents(daemonId, idleDaemons, busyDaemons);
         output.accept(Message.buildStatus(message));
-        return startDaemon(daemonId);
+        return startDaemon(daemonId, output);
     }
 
     private DaemonClientConnection connectNoDaemon() {
@@ -297,8 +300,8 @@ public class DaemonConnector {
         return null;
     }
 
-    public DaemonClientConnection startDaemon(String daemonId) {
-        final Process process = startDaemonProcess(daemonId);
+    public DaemonClientConnection startDaemon(String daemonId, ClientOutput output) {
+        final Process process = startDaemonProcess(daemonId, output);
         LOGGER.debug("Started Maven daemon {}", daemonId);
         long start = System.currentTimeMillis();
         do {
@@ -321,7 +324,7 @@ public class DaemonConnector {
         return String.format("%08x", new Random().nextInt());
     }
 
-    private Process startDaemonProcess(String daemonId) {
+    private Process startDaemonProcess(String daemonId, ClientOutput output) {
         final Path mvndHome = parameters.mvndHome();
         final Path workingDir = parameters.userDir();
         String command = "";
@@ -354,7 +357,32 @@ public class DaemonConnector {
             args.add("-javaagent:" + mvndAgentPath);
             // debug options
             if (parameters.property(Environment.MVND_DEBUG).asBoolean()) {
-                args.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8000");
+                String address =
+                        parameters.property(Environment.MVND_DEBUG_ADDRESS).asString();
+                String host;
+                String port;
+                int column = address.indexOf(':');
+                if (column >= 0) {
+                    host = address.substring(0, column);
+                    port = address.substring(column + 1);
+                } else {
+                    host = "localhost";
+                    port = address;
+                }
+                if (!port.matches("[0-9]+")) {
+                    throw new IllegalArgumentException("Wrong debug address syntax: " + address);
+                }
+                int iPort = Integer.parseInt(port);
+                if (iPort == 0) {
+                    try (ServerSocketChannel channel = SocketFamily.inet.openServerSocket()) {
+                        iPort = ((InetSocketAddress) channel.getLocalAddress()).getPort();
+                    } catch (IOException e) {
+                        throw new IllegalStateException("Unable to find a free debug port", e);
+                    }
+                }
+                address = host + ":" + iPort;
+                output.accept(Message.buildStatus("Daemon listening for debugger on address: " + address));
+                args.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=" + address);
             }
             // jvm args
             String jvmArgs = parameters.jvmArgs();

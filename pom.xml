@@ -23,8 +23,8 @@
   <parent>
     <groupId>org.apache.maven</groupId>
     <artifactId>maven-parent</artifactId>
-    <version>38</version>
-    <relativePath/>
+    <version>39</version>
+    <relativePath />
   </parent>
 
   <groupId>org.apache.maven.daemon</groupId>
@@ -67,7 +67,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven-dist.required.jdk>8</maven-dist.required.jdk>
-    <project.build.outputTimestamp>2022-11-19T15:16:03Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2022-12-16T11:57:19Z</project.build.outputTimestamp>
     <trimStackTrace>false</trimStackTrace>
     <project.github.repository>apache/maven-mvnd</project.github.repository>
     <repository.url>github.com:${project.github.repository}</repository.url>
@@ -84,9 +84,10 @@
     <jline.version>3.21.0</jline.version>
     <junit.jupiter.version>5.9.1</junit.jupiter.version>
     <logback.version>1.2.11</logback.version>
-    <maven.version>4.0.0-alpha-2</maven.version>
-    <maven.resolver.version>1.8.2</maven.resolver.version>
-    <slf4j.version>1.7.35</slf4j.version>
+    <maven.version>4.0.0-alpha-3</maven.version>
+    <!-- Keep in sync with Maven -->
+    <maven.resolver.version>1.9.2</maven.resolver.version>
+    <slf4j.version>1.7.36</slf4j.version>
     <sisu.version>0.3.5</sisu.version>
 
     <!-- plugin versions a..z -->

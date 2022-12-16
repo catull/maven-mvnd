@@ -18,10 +18,6 @@
  */
 package org.apache.maven.cli;
 
-import static java.util.Comparator.comparing;
-import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
-
-import com.google.inject.AbstractModule;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -43,6 +39,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.google.inject.AbstractModule;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
@@ -70,7 +68,6 @@ import org.apache.maven.extension.internal.CoreExtensionEntry;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.model.building.ModelProcessor;
 import org.apache.maven.plugin.ExtensionRealmCache;
-import org.apache.maven.plugin.MavenPluginManager;
 import org.apache.maven.plugin.PluginArtifactsCache;
 import org.apache.maven.plugin.PluginRealmCache;
 import org.apache.maven.plugin.version.PluginVersionResolver;
@@ -105,13 +102,15 @@ import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
 import org.mvndaemon.mvnd.logging.smart.LoggingExecutionListener;
 import org.mvndaemon.mvnd.logging.smart.LoggingOutputStream;
 import org.mvndaemon.mvnd.plugin.CachingPluginVersionResolver;
-import org.mvndaemon.mvnd.plugin.CliMavenPluginManager;
 import org.mvndaemon.mvnd.transfer.DaemonMavenTransferListener;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
+
+import static java.util.Comparator.comparing;
+import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
 
 /**
  * File origin:
@@ -140,8 +139,6 @@ public class DaemonMavenCli {
     private static final String MVN_MAVEN_CONFIG = ".mvn/maven.config";
 
     public static final String STYLE_COLOR_PROPERTY = "style.color";
-
-    public static final String RESUME = "r";
 
     public static final String RAW_STREAMS = "raw-streams";
 
@@ -306,14 +303,9 @@ public class DaemonMavenCli {
 
     private CLIManager newCLIManager() {
         CLIManager cliManager = new CLIManager();
-        cliManager.options.addOption(Option.builder(RESUME)
-                .longOpt("resume")
-                .desc("Resume reactor from "
-                        + "the last failed project, using the resume.properties file in the build directory")
-                .build());
         cliManager.options.addOption(Option.builder()
                 .longOpt(RAW_STREAMS)
-                .desc("Do not decorate output and " + "error streams")
+                .desc("Do not decorate output and error streams")
                 .build());
         return cliManager;
     }
@@ -401,7 +393,10 @@ public class DaemonMavenCli {
                 // Ignore
                 //
             }
-        } else if (!cliRequest.commandLine.hasOption(RAW_STREAMS)) {
+        } else if (!Environment.MVND_RAW_STREAMS
+                .asOptional()
+                .map(Boolean::parseBoolean)
+                .orElse(Boolean.FALSE)) {
             ch.qos.logback.classic.Logger stdout =
                     (ch.qos.logback.classic.Logger) slf4jLoggerFactory.getLogger("stdout");
             ch.qos.logback.classic.Logger stderr =
@@ -527,7 +522,6 @@ public class DaemonMavenCli {
                 bind(PluginArtifactsCache.class).to(InvalidatingPluginArtifactsCache.class);
                 bind(PluginRealmCache.class).to(InvalidatingPluginRealmCache.class);
                 bind(ProjectArtifactsCache.class).to(InvalidatingProjectArtifactsCache.class);
-                bind(MavenPluginManager.class).to(CliMavenPluginManager.class);
                 bind(PluginVersionResolver.class).to(CachingPluginVersionResolver.class);
             }
         });

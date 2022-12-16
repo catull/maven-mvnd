@@ -170,6 +170,13 @@ public enum Environment {
      */
     MVND_DEBUG("mvnd.debug", null, Boolean.FALSE, OptionType.BOOLEAN, Flags.DISCRIMINATING),
     /**
+     * The tcp address used to launch the debug mode. Defaults to <code>8000</code>, which is similar to
+     * <code>localhost:8000</code>.  In order to remote debug from a different computer, you need to allow
+     * remote connections using <code>*:8000</code> for example.  Use a port with a value of <code>0</code>
+     * to have <code>mvnd</code> to choose one.
+     */
+    MVND_DEBUG_ADDRESS("mvnd.debug.address", null, "8000", OptionType.STRING, Flags.DISCRIMINATING),
+    /**
      * A time period after which an unused daemon will terminate by itself.
      */
     MVND_IDLE_TIMEOUT("mvnd.idleTimeout", null, "3 hours", OptionType.DURATION, Flags.DISCRIMINATING),
@@ -278,7 +285,12 @@ public enum Environment {
      * This pattern will be evaluated against the full path of the dependencies, so it is usually desirable to
      * start with <code>'glob:**&#47;'</code> to support any location of the local repository.
      */
-    MVND_PLUGIN_REALM_EVICT_PATTERN("mvnd.pluginRealmEvictPattern", null, "", OptionType.STRING, Flags.OPTIONAL);
+    MVND_PLUGIN_REALM_EVICT_PATTERN("mvnd.pluginRealmEvictPattern", null, "", OptionType.STRING, Flags.OPTIONAL),
+    /**
+     * Whether or not decorate output and error streams
+     **/
+    MVND_RAW_STREAMS("mvnd.rawStreams", null, Boolean.FALSE, OptionType.VOID, Flags.OPTIONAL, "mvnd:--raw-streams"),
+    ;
 
     static Properties properties;
 

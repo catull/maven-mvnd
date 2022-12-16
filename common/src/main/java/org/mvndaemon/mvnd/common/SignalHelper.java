@@ -16,29 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.mvndaemon.mvnd.common.logging;
+package org.mvndaemon.mvnd.common;
 
-import java.util.List;
-import java.util.function.Consumer;
+public class SignalHelper {
 
-import org.mvndaemon.mvnd.common.Message;
-
-/**
- * A sink for various kinds of events sent by the daemon.
- */
-public interface ClientOutput extends AutoCloseable {
-
-    void setDaemonId(String daemonId);
-
-    void setDaemonDispatch(Consumer<Message> sink);
-
-    void setDaemonReceive(Consumer<Message> sink);
-
-    void accept(Message message);
-
-    void accept(List<Message> messages);
-
-    void describeTerminal();
-
-    int getTerminalWidth();
+    /**
+     * Ignore signals to that stopping the mvnd client won't stop the daemon
+     */
+    public static void ignoreStopSignals() throws Exception {
+        sun.misc.Signal.handle(new sun.misc.Signal("INT"), sun.misc.SignalHandler.SIG_IGN);
+        if (Os.current() != Os.WINDOWS) {
+            sun.misc.Signal.handle(new sun.misc.Signal("TSTP"), sun.misc.SignalHandler.SIG_IGN);
+        }
+    }
 }

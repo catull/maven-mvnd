@@ -18,12 +18,14 @@
  */
 package org.mvndaemon.mvnd.cache.invalidating;
 
-import java.nio.file.Path;
-import java.util.List;
-import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+
+import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Stream;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.DefaultPluginRealmCache;
 import org.apache.maven.plugin.PluginContainerException;
@@ -39,11 +41,6 @@ import org.mvndaemon.mvnd.cache.CacheFactory;
 @Named
 @Priority(10)
 public class InvalidatingPluginRealmCache extends DefaultPluginRealmCache {
-
-    @FunctionalInterface
-    public interface PluginRealmSupplier {
-        CacheRecord load() throws PluginResolutionException, PluginContainerException;
-    }
 
     protected static class Record implements org.mvndaemon.mvnd.cache.CacheRecord {
 
@@ -83,6 +80,7 @@ public class InvalidatingPluginRealmCache extends DefaultPluginRealmCache {
         return r != null ? r.record : null;
     }
 
+    @Override
     public CacheRecord get(Key key, PluginRealmSupplier supplier)
             throws PluginResolutionException, PluginContainerException {
         try {
