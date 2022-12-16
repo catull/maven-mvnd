@@ -90,7 +90,7 @@ public class DaemonExpiration {
     static DaemonExpirationStrategy lowMemory(double minFreeMemoryPercentage) {
         if (Os.current() == Os.MAC) {
             return new OsxMemoryExpirationStrategy(minFreeMemoryPercentage);
-        } else if (Os.current() == Os.LINUX) {
+        } else if (Os.current() == Os.LINUX || Os.current() == Os.BSD) {
             return new MemInfoMemoryExpirationStrategy(minFreeMemoryPercentage);
         } else {
             return new MBeanMemoryExpirationStrategy(minFreeMemoryPercentage);

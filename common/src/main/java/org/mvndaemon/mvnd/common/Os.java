@@ -23,6 +23,7 @@ import java.util.Locale;
 public enum Os {
     LINUX(true),
     MAC(true),
+    BSD(true),
     WINDOWS(false) {
         private boolean cygwin;
 
@@ -54,6 +55,8 @@ public enum Os {
             CURRENT = WINDOWS;
         } else if (osName.contains("linux")) {
             CURRENT = LINUX;
+        } else if (osName.contains("bsd")) {
+            CURRENT = BSD;
         } else {
             CURRENT = UNKNOWN;
         }
